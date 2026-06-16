@@ -78,14 +78,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Ghost Customer" },
+      { name: "description", content: "Ghost Customer is an AI-powered virtual focus group that lets founders and product teams validate ideas before writing a single line of code. Describe your prod" },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Ghost Customer" },
+      { property: "og:description", content: "Ghost Customer is an AI-powered virtual focus group that lets founders and product teams validate ideas before writing a single line of code. Describe your prod" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Ghost Customer" },
+      { name: "twitter:description", content: "Ghost Customer is an AI-powered virtual focus group that lets founders and product teams validate ideas before writing a single line of code. Describe your prod" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/djNL5nYi4JXGNHqBxfpXTj8Efgl2/social-images/social-1781652998577-ghost_customer_social_card.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/djNL5nYi4JXGNHqBxfpXTj8Efgl2/social-images/social-1781652998577-ghost_customer_social_card.webp" },
     ],
     links: [
       {
