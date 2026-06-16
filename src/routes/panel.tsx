@@ -90,6 +90,13 @@ function Panel() {
         data: { product, customer, personas, history, question: q },
       });
       addPanelTurn(replies);
+      const turnIndex = useGhostStore.getState().chat.length - 1;
+      try {
+        const pulse = await callPulse({ data: { question: q, replies } });
+        setPulse(turnIndex, pulse);
+      } catch (pulseErr) {
+        console.error(pulseErr);
+      }
     } catch (err) {
       console.error(err);
       toast.error("The panel couldn't respond. Please try again.");
