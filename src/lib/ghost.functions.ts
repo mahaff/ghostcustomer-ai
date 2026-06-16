@@ -16,13 +16,13 @@ export interface Persona {
 }
 
 const personaSchema = z.object({
-  name: z.string(),
-  age: z.number(),
-  title: z.string(),
-  backstory: z.string(),
-  goal: z.string(),
-  frustration: z.string(),
-  tag: z.string(),
+  name: z.string().max(120),
+  age: z.number().int().min(0).max(120),
+  title: z.string().max(200),
+  backstory: z.string().max(1000),
+  goal: z.string().max(500),
+  frustration: z.string().max(500),
+  tag: z.string().max(60),
 });
 
 function extractJson(text: string): unknown {
