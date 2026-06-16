@@ -171,6 +171,32 @@ function Panel() {
                     </p>
                   </div>
                 ))}
+                {turn.pulse && (
+                  <div className="rounded-xl border border-primary/30 bg-primary/[0.06] p-5 ring-1 ring-inset ring-primary/10">
+                    <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary/90">
+                      <Sparkles className="h-3.5 w-3.5" /> Panel Pulse
+                    </div>
+                    <div className="space-y-3 text-sm leading-relaxed">
+                      <div className="flex gap-2.5">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400/90" />
+                        <p className="text-foreground/90">
+                          <span className="font-medium text-foreground">Agreement: </span>
+                          {turn.pulse.agreement}
+                        </p>
+                      </div>
+                      <div className="flex gap-2.5">
+                        <Split className="mt-0.5 h-4 w-4 shrink-0 text-amber-400/90" />
+                        <p className="text-foreground/90">
+                          <span className="font-medium text-foreground">Disagreement: </span>
+                          {turn.pulse.disagreement}
+                        </p>
+                      </div>
+                      <div className="border-t border-border/60 pt-3 text-foreground/80 italic">
+                        {turn.pulse.synthesis}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ),
           )}
