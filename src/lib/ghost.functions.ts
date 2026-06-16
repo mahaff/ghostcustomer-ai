@@ -1,9 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateText, Output } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 const MODEL = "google/gemini-3-flash-preview";
+
+export interface Persona {
+  name: string;
+  age: number;
+  title: string;
+  backstory: string;
+  goal: string;
+  frustration: string;
+  tag: string;
+}
 
 const personaSchema = z.object({
   name: z.string(),
@@ -15,11 +25,14 @@ const personaSchema = z.object({
   tag: z.string(),
 });
 
-export type Persona = z.infer<typeof personaSchema>;
-
-const panelSchema = z.object({
-  personas: z.array(personaSchema),
-});
+function extractJson(text: string): unknown {
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const raw = fenced ? fenced[1] : text;
+  const start = raw.search(/[[{]/);
+  if (start === -1) throw new Error("No JSON found in response");
+  const end = Math.max(raw.lastIndexOf("]"), raw.lastIndexOf("}"));
+  return JSON.parse(raw.slice(start, end + 1));
+}
 
 const GeneratePanelInput = z.object({
   product: z.string().min(1),
@@ -34,35 +47,28 @@ export const generatePanel = createServerFn({ method: "POST" })
 
     const gateway = createLovableAiGatewayProvider(key);
 
-    const { output } = await generateText({
+    const { text } = await generateText({
       model: gateway(MODEL),
-      output: Output.object({ schema: panelSchema }),
       system:
         "You are an expert UX researcher who builds vivid, realistic customer personas for focus groups. " +
         "Create exactly 4 distinct, human personas. They must feel like real, specific people — varied in age, " +
         "background, temperament, and buying attitude. Give each a unique personality tag such as Skeptic, " +
-        "Early Adopter, Budget-Conscious, Loyalist, Pragmatist, or similar. Backstories should be 2-3 sentences " +
-        "and concrete. Avoid generic or interchangeable characters.",
+        "Early Adopter, Budget-Conscious, Loyalist, or Pragmatist. Backstories should be 2-3 concrete sentences. " +
+        "Avoid generic or interchangeable characters.\n\n" +
+        "Respond with ONLY a JSON array of exactly 4 objects, each with these keys: " +
+        '"name" (string), "age" (number), "title" (string, one-line job title), ' +
+        '"backstory" (string), "goal" (string, their top goal), ' +
+        '"frustration" (string, their biggest frustration), "tag" (string, personality tag). ' +
+        "No prose, no markdown fences.",
       prompt:
         `Product description: ${data.product}\n\n` +
         `Target customer: ${data.customer}\n\n` +
-        "Generate exactly 4 focus-group personas for this product.",
+        "Generate exactly 4 focus-group personas for this product as a JSON array.",
     });
 
-    if (!output.personas || output.personas.length === 0) {
-      throw new Error("Failed to generate personas");
-    }
-    return output.personas.slice(0, 4);
+    const parsed = z.array(personaSchema).min(1).parse(extractJson(text));
+    return parsed.slice(0, 4);
   });
-
-const chatSchema = z.object({
-  responses: z.array(
-    z.object({
-      name: z.string(),
-      response: z.string(),
-    }),
-  ),
-});
 
 const AskPanelInput = z.object({
   product: z.string(),
@@ -76,6 +82,8 @@ const AskPanelInput = z.object({
   ),
   question: z.string().min(1),
 });
+
+const replySchema = z.object({ name: z.string(), response: z.string() });
 
 export const askPanel = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => AskPanelInput.parse(data))
@@ -101,20 +109,20 @@ export const askPanel = createServerFn({ method: "POST" })
           .join("\n\n")
       : "(none yet)";
 
-    const { output } = await generateText({
+    const { text } = await generateText({
       model: gateway(MODEL),
-      output: Output.object({ schema: chatSchema }),
       system:
-        "You are running a virtual focus group. You voice exactly 4 personas. Each persona answers the " +
+        "You are running a virtual focus group. You voice exactly these 4 personas. Each persona answers the " +
         "moderator's question fully in character — using their own voice, attitude, goals, and frustrations. " +
-        "Keep each response to 2-4 sentences, conversational and specific, never generic. They may disagree " +
-        "with each other. Return one response per persona, in the same order as provided.\n\n" +
-        `PRODUCT: ${data.product}\nTARGET CUSTOMER: ${data.customer}\n\nPANEL:\n${personaProfiles}`,
+        "Keep each response to 2-4 sentences, conversational and specific, never generic. They may disagree.\n\n" +
+        `PRODUCT: ${data.product}\nTARGET CUSTOMER: ${data.customer}\n\nPANEL:\n${personaProfiles}\n\n` +
+        'Respond with ONLY a JSON array of exactly 4 objects with keys "name" (the persona name) and ' +
+        '"response" (their in-character reply), in the same order as the panel. No prose, no markdown fences.',
       prompt:
         `Conversation so far:\n${historyText}\n\n` +
         `New moderator question: ${data.question}\n\n` +
-        "Have all 4 personas respond in character.",
+        "Have all 4 personas respond in character as a JSON array.",
     });
 
-    return output.responses ?? [];
+    return z.array(replySchema).parse(extractJson(text));
   });
