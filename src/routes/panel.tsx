@@ -2,11 +2,19 @@ import { useEffect, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, SendHorizontal, RotateCcw } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  SendHorizontal,
+  RotateCcw,
+  Check,
+  Split,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PersonaCard } from "@/components/PersonaCard";
-import { askPanel } from "@/lib/ghost.functions";
+import { askPanel, synthesizePulse } from "@/lib/ghost.functions";
 import { useGhostStore } from "@/store/ghost";
 
 export const Route = createFileRoute("/panel")({
@@ -31,8 +39,17 @@ function colorFor(name: string) {
 function Panel() {
   const navigate = useNavigate();
   const callAsk = useServerFn(askPanel);
-  const { product, customer, personas, chat, addUserTurn, addPanelTurn, reset } =
-    useGhostStore();
+  const callPulse = useServerFn(synthesizePulse);
+  const {
+    product,
+    customer,
+    personas,
+    chat,
+    addUserTurn,
+    addPanelTurn,
+    setPulse,
+    reset,
+  } = useGhostStore();
 
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
@@ -73,6 +90,13 @@ function Panel() {
         data: { product, customer, personas, history, question: q },
       });
       addPanelTurn(replies);
+      const turnIndex = useGhostStore.getState().chat.length - 1;
+      try {
+        const pulse = await callPulse({ data: { question: q, replies } });
+        setPulse(turnIndex, pulse);
+      } catch (pulseErr) {
+        console.error(pulseErr);
+      }
     } catch (err) {
       console.error(err);
       toast.error("The panel couldn't respond. Please try again.");
@@ -147,6 +171,32 @@ function Panel() {
                     </p>
                   </div>
                 ))}
+                {turn.pulse && (
+                  <div className="rounded-xl border border-primary/30 bg-primary/[0.06] p-5 ring-1 ring-inset ring-primary/10">
+                    <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary/90">
+                      <Sparkles className="h-3.5 w-3.5" /> Panel Pulse
+                    </div>
+                    <div className="space-y-3 text-sm leading-relaxed">
+                      <div className="flex gap-2.5">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400/90" />
+                        <p className="text-foreground/90">
+                          <span className="font-medium text-foreground">Agreement: </span>
+                          {turn.pulse.agreement}
+                        </p>
+                      </div>
+                      <div className="flex gap-2.5">
+                        <Split className="mt-0.5 h-4 w-4 shrink-0 text-amber-400/90" />
+                        <p className="text-foreground/90">
+                          <span className="font-medium text-foreground">Disagreement: </span>
+                          {turn.pulse.disagreement}
+                        </p>
+                      </div>
+                      <div className="border-t border-border/60 pt-3 text-foreground/80 italic">
+                        {turn.pulse.synthesis}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ),
           )}

@@ -1,10 +1,14 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Persona } from "@/lib/ghost.functions";
+import type { Persona, PanelPulse } from "@/lib/ghost.functions";
 
 export type ChatTurn =
   | { role: "user"; content: string }
-  | { role: "panel"; replies: { name: string; response: string }[] };
+  | {
+      role: "panel";
+      replies: { name: string; response: string }[];
+      pulse?: PanelPulse;
+    };
 
 interface GhostState {
   product: string;
@@ -15,6 +19,7 @@ interface GhostState {
   setPersonas: (personas: Persona[]) => void;
   addUserTurn: (content: string) => void;
   addPanelTurn: (replies: { name: string; response: string }[]) => void;
+  setPulse: (turnIndex: number, pulse: PanelPulse) => void;
   reset: () => void;
 }
 
@@ -31,6 +36,12 @@ export const useGhostStore = create<GhostState>()(
         set((s) => ({ chat: [...s.chat, { role: "user", content }] })),
       addPanelTurn: (replies) =>
         set((s) => ({ chat: [...s.chat, { role: "panel", replies }] })),
+      setPulse: (turnIndex, pulse) =>
+        set((s) => ({
+          chat: s.chat.map((t, i) =>
+            i === turnIndex && t.role === "panel" ? { ...t, pulse } : t,
+          ),
+        })),
       reset: () => set({ product: "", customer: "", personas: [], chat: [] }),
     }),
     {
