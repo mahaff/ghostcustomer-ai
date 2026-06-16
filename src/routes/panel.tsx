@@ -2,7 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, SendHorizontal, RotateCcw } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  SendHorizontal,
+  RotateCcw,
+  Check,
+  Split,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PersonaCard } from "@/components/PersonaCard";
