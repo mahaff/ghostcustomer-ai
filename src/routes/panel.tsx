@@ -6,7 +6,7 @@ import { ArrowLeft, Loader2, SendHorizontal, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { PersonaCard } from "@/components/PersonaCard";
-import { askPanel } from "@/lib/ghost.functions";
+import { askPanel, synthesizePulse } from "@/lib/ghost.functions";
 import { useGhostStore } from "@/store/ghost";
 
 export const Route = createFileRoute("/panel")({
