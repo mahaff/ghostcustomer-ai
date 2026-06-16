@@ -39,8 +39,17 @@ function colorFor(name: string) {
 function Panel() {
   const navigate = useNavigate();
   const callAsk = useServerFn(askPanel);
-  const { product, customer, personas, chat, addUserTurn, addPanelTurn, reset } =
-    useGhostStore();
+  const callPulse = useServerFn(synthesizePulse);
+  const {
+    product,
+    customer,
+    personas,
+    chat,
+    addUserTurn,
+    addPanelTurn,
+    setPulse,
+    reset,
+  } = useGhostStore();
 
   const [question, setQuestion] = useState("");
   const [loading, setLoading] = useState(false);
