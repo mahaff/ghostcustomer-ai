@@ -1,0 +1,7 @@
+# Ghost Customer
+
+> An AI-powered virtual focus group for founders and product teams. Describe your product and get a panel of AI customers who tell you why they'd buy — or walk away.
+
+## Pages
+- [Home](/): Landing page and product overview.
+- [Set up panel](/setup): Describe your product and target customer to generate a focus group.
