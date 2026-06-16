@@ -64,7 +64,7 @@ export const generatePanel = createServerFn({ method: "POST" })
         `Product description: ${data.product}\n\n` +
         `Target customer: ${data.customer}\n\n` +
         "Generate exactly 4 focus-group personas for this product as a JSON array.",
-      maxTokens: 1500,
+      maxOutputTokens: 1500,
     });
 
     const parsed = z.array(personaSchema).min(1).parse(extractJson(text));
