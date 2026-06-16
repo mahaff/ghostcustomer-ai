@@ -71,16 +71,18 @@ export const generatePanel = createServerFn({ method: "POST" })
   });
 
 const AskPanelInput = z.object({
-  product: z.string(),
-  customer: z.string(),
-  personas: z.array(personaSchema),
-  history: z.array(
-    z.object({
-      role: z.enum(["user", "panel"]),
-      content: z.string(),
-    }),
-  ),
-  question: z.string().min(1),
+  product: z.string().max(2000),
+  customer: z.string().max(2000),
+  personas: z.array(personaSchema).min(1).max(4),
+  history: z
+    .array(
+      z.object({
+        role: z.enum(["user", "panel"]),
+        content: z.string().max(4000),
+      }),
+    )
+    .max(20),
+  question: z.string().min(1).max(500),
 });
 
 const replySchema = z.object({ name: z.string(), response: z.string() });
