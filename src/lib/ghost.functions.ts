@@ -124,5 +124,18 @@ export const askPanel = createServerFn({ method: "POST" })
         "Have all 4 personas respond in character as a JSON array.",
     });
 
-    return z.array(replySchema).parse(extractJson(text));
+    const rawReplies = extractJson(text);
+    const normalized = (Array.isArray(rawReplies) ? rawReplies : []).map(
+      (r: any, i: number) => ({
+        name:
+          typeof r?.name === "string" && r.name.trim()
+            ? r.name
+            : data.personas[i]?.name ?? `Persona ${i + 1}`,
+        response: String(
+          r?.response ?? r?.reply ?? r?.message ?? r?.answer ?? r?.text ?? "",
+        ).trim(),
+      }),
+    );
+
+    return z.array(replySchema).parse(normalized).filter((r) => r.response);
   });
