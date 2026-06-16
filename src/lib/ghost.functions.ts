@@ -35,8 +35,8 @@ function extractJson(text: string): unknown {
 }
 
 const GeneratePanelInput = z.object({
-  product: z.string().min(1),
-  customer: z.string().min(1),
+  product: z.string().min(1).max(2000),
+  customer: z.string().min(1).max(2000),
 });
 
 export const generatePanel = createServerFn({ method: "POST" })
