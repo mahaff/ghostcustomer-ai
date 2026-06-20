@@ -233,24 +233,45 @@ function Panel() {
 
         <form
           onSubmit={handleAsk}
-          className="sticky bottom-4 mt-6 flex items-end gap-3 rounded-2xl border border-border bg-card/90 p-3 backdrop-blur"
+          className={`sticky bottom-4 mt-6 gap-3 rounded-2xl border border-border bg-card/90 p-3 backdrop-blur ${
+            mode === "copy" ? "flex flex-col" : "flex items-end"
+          }`}
         >
           <Textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
+              if (mode === "question" && e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 handleAsk(e);
               }
             }}
-            placeholder="Ask your panel a question…"
-            rows={1}
-            className="max-h-40 min-h-[44px] resize-none border-0 bg-transparent text-base focus-visible:ring-0"
+            placeholder={
+              mode === "copy"
+                ? "Paste your landing page copy, pricing table, or feature description…"
+                : "Ask your panel a question…"
+            }
+            rows={mode === "copy" ? 8 : 1}
+            className={`resize-none border-0 bg-transparent text-base focus-visible:ring-0 ${
+              mode === "copy"
+                ? "min-h-[180px]"
+                : "max-h-40 min-h-[44px]"
+            }`}
           />
-          <Button type="submit" size="icon" disabled={!question.trim() || loading} className="h-11 w-11 shrink-0">
-            <SendHorizontal className="h-5 w-5" />
-          </Button>
+          {mode === "copy" ? (
+            <Button type="submit" disabled={!question.trim() || loading} className="self-end">
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <SendHorizontal className="h-4 w-4" />
+              )}
+              Get reactions
+            </Button>
+          ) : (
+            <Button type="submit" size="icon" disabled={!question.trim() || loading} className="h-11 w-11 shrink-0">
+              <SendHorizontal className="h-5 w-5" />
+            </Button>
+          )}
         </form>
       </section>
     </main>
