@@ -87,7 +87,7 @@ function Panel() {
             },
       );
       const replies = await callAsk({
-        data: { product, customer, personas, history, question: q },
+        data: { product, customer, personas, history, question: q, mode },
       });
       addPanelTurn(replies);
       const turnIndex = useGhostStore.getState().chat.length - 1;
