@@ -91,15 +91,36 @@ function Panel() {
         data: { product, customer, personas, history, question: q, mode },
       });
       addPanelTurn(replies);
+      pendo.track("panel_question_asked", {
+        mode,
+        question_length: q.length,
+        reply_count: replies.length,
+        chat_turn_number: useGhostStore.getState().chat.length,
+        history_length: history.length,
+        persona_count: personas.length,
+      });
       const turnIndex = useGhostStore.getState().chat.length - 1;
       try {
         const pulse = await callPulse({ data: { question: q, replies } });
         setPulse(turnIndex, pulse);
+        pendo.track("pulse_synthesized", {
+          question_length: q.length,
+          reply_count: replies.length,
+          turn_index: turnIndex,
+          has_agreement: Boolean(pulse.agreement),
+          has_disagreement: Boolean(pulse.disagreement),
+        });
       } catch (pulseErr) {
         console.error(pulseErr);
       }
     } catch (err) {
       console.error(err);
+      pendo.track("panel_question_failed", {
+        mode,
+        question_length: q.length,
+        chat_turn_number: useGhostStore.getState().chat.length,
+        error_message: String(err instanceof Error ? err.message : err).substring(0, 200),
+      });
       toast.error("The panel couldn't respond. Please try again.");
     } finally {
       setLoading(false);
@@ -107,6 +128,12 @@ function Panel() {
   }
 
   function handleReset() {
+    const state = useGhostStore.getState();
+    pendo.track("panel_reset", {
+      total_chat_turns: state.chat.length,
+      total_questions_asked: state.chat.filter((t) => t.role === "user").length,
+      session_had_pulse: state.chat.some((t) => t.role === "panel" && t.pulse !== undefined),
+    });
     reset();
     navigate({ to: "/setup" });
   }
