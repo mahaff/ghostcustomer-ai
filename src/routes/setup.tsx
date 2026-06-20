@@ -44,9 +44,26 @@ function Setup() {
         data: { product: product.trim(), customer: customer.trim() },
       });
       setPersonas(personas);
+      if (typeof pendo !== "undefined") {
+        pendo.track("panel_generated", {
+          product_description_length: product.trim().length,
+          customer_description_length: customer.trim().length,
+          customer_description: customer.trim().substring(0, 200),
+          persona_count: personas.length,
+          persona_tags: personas.map((p) => p.tag).join(", "),
+          persona_names: personas.map((p) => p.name).join(", "),
+        });
+      }
       navigate({ to: "/panel" });
     } catch (err) {
       console.error(err);
+      if (typeof pendo !== "undefined") {
+        pendo.track("panel_generation_failed", {
+          product_description_length: product.trim().length,
+          customer_description_length: customer.trim().length,
+          error_message: (err instanceof Error ? err.message : String(err)).substring(0, 200),
+        });
+      }
       toast.error("Couldn't generate your panel. Please try again.");
     } finally {
       setLoading(false);
