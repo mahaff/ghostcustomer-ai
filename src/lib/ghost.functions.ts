@@ -128,7 +128,11 @@ export const askPanel = createServerFn({ method: "POST" })
         '"response" (their in-character reply), in the same order as the panel. No prose, no markdown fences.',
       prompt:
         `Conversation so far:\n${historyText}\n\n` +
-        `New moderator question: ${data.question}\n\n` +
+        (data.mode === "copy"
+          ? `The moderator has shared the following marketing copy (landing page text, pricing, or feature ` +
+            `description) and wants each persona to react to it in their own voice — what grabs them, what ` +
+            `confuses or turns them off, and whether it makes them want to buy:\n\n"""\n${data.question}\n"""\n\n`
+          : `New moderator question: ${data.question}\n\n`) +
         "Have all 4 personas respond in character as a JSON array.",
       maxOutputTokens: 1200,
     });
