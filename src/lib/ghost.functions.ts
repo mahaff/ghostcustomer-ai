@@ -83,7 +83,8 @@ const AskPanelInput = z.object({
       }),
     )
     .max(20),
-  question: z.string().min(1).max(500),
+  question: z.string().min(1).max(6000),
+  mode: z.enum(["question", "copy"]).default("question"),
 });
 
 const replySchema = z.object({ name: z.string(), response: z.string() });
@@ -127,7 +128,11 @@ export const askPanel = createServerFn({ method: "POST" })
         '"response" (their in-character reply), in the same order as the panel. No prose, no markdown fences.',
       prompt:
         `Conversation so far:\n${historyText}\n\n` +
-        `New moderator question: ${data.question}\n\n` +
+        (data.mode === "copy"
+          ? `The moderator has shared the following marketing copy (landing page text, pricing, or feature ` +
+            `description) and wants each persona to react to it in their own voice — what grabs them, what ` +
+            `confuses or turns them off, and whether it makes them want to buy:\n\n"""\n${data.question}\n"""\n\n`
+          : `New moderator question: ${data.question}\n\n`) +
         "Have all 4 personas respond in character as a JSON array.",
       maxOutputTokens: 1200,
     });
@@ -149,7 +154,7 @@ export const askPanel = createServerFn({ method: "POST" })
   });
 
 const PulseInput = z.object({
-  question: z.string().min(1).max(500),
+  question: z.string().min(1).max(6000),
   replies: z
     .array(z.object({ name: z.string().max(120), response: z.string().max(4000) }))
     .min(1)

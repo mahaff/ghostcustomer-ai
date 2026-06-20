@@ -52,6 +52,7 @@ function Panel() {
   } = useGhostStore();
 
   const [question, setQuestion] = useState("");
+  const [mode, setMode] = useState<"question" | "copy">("question");
   const [loading, setLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -87,7 +88,7 @@ function Panel() {
             },
       );
       const replies = await callAsk({
-        data: { product, customer, personas, history, question: q },
+        data: { product, customer, personas, history, question: q, mode },
       });
       addPanelTurn(replies);
       const turnIndex = useGhostStore.getState().chat.length - 1;
@@ -138,9 +139,30 @@ function Panel() {
       </section>
 
       <section className="mt-12">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground/70">
-          Focus group chat
-        </h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground/70">
+            Focus group chat
+          </h2>
+          <div className="inline-flex rounded-lg border border-border bg-card/60 p-0.5 text-sm">
+            {([
+              { id: "question", label: "Ask a Question" },
+              { id: "copy", label: "React to My Copy" },
+            ] as const).map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setMode(m.id)}
+                className={`rounded-md px-3 py-1.5 transition-colors ${
+                  mode === m.id
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="mt-4 space-y-6">
           {chat.length === 0 && (
@@ -211,24 +233,45 @@ function Panel() {
 
         <form
           onSubmit={handleAsk}
-          className="sticky bottom-4 mt-6 flex items-end gap-3 rounded-2xl border border-border bg-card/90 p-3 backdrop-blur"
+          className={`sticky bottom-4 mt-6 gap-3 rounded-2xl border border-border bg-card/90 p-3 backdrop-blur ${
+            mode === "copy" ? "flex flex-col" : "flex items-end"
+          }`}
         >
           <Textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
+              if (mode === "question" && e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 handleAsk(e);
               }
             }}
-            placeholder="Ask your panel a question…"
-            rows={1}
-            className="max-h-40 min-h-[44px] resize-none border-0 bg-transparent text-base focus-visible:ring-0"
+            placeholder={
+              mode === "copy"
+                ? "Paste your landing page copy, pricing table, or feature description…"
+                : "Ask your panel a question…"
+            }
+            rows={mode === "copy" ? 8 : 1}
+            className={`resize-none border-0 bg-transparent text-base focus-visible:ring-0 ${
+              mode === "copy"
+                ? "min-h-[180px]"
+                : "max-h-40 min-h-[44px]"
+            }`}
           />
-          <Button type="submit" size="icon" disabled={!question.trim() || loading} className="h-11 w-11 shrink-0">
-            <SendHorizontal className="h-5 w-5" />
-          </Button>
+          {mode === "copy" ? (
+            <Button type="submit" disabled={!question.trim() || loading} className="self-end">
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <SendHorizontal className="h-4 w-4" />
+              )}
+              Get reactions
+            </Button>
+          ) : (
+            <Button type="submit" size="icon" disabled={!question.trim() || loading} className="h-11 w-11 shrink-0">
+              <SendHorizontal className="h-5 w-5" />
+            </Button>
+          )}
         </form>
       </section>
     </main>
