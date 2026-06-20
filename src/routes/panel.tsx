@@ -139,9 +139,30 @@ function Panel() {
       </section>
 
       <section className="mt-12">
-        <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground/70">
-          Focus group chat
-        </h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground/70">
+            Focus group chat
+          </h2>
+          <div className="inline-flex rounded-lg border border-border bg-card/60 p-0.5 text-sm">
+            {([
+              { id: "question", label: "Ask a Question" },
+              { id: "copy", label: "React to My Copy" },
+            ] as const).map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setMode(m.id)}
+                className={`rounded-md px-3 py-1.5 transition-colors ${
+                  mode === m.id
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="mt-4 space-y-6">
           {chat.length === 0 && (
