@@ -83,7 +83,8 @@ const AskPanelInput = z.object({
       }),
     )
     .max(20),
-  question: z.string().min(1).max(500),
+  question: z.string().min(1).max(6000),
+  mode: z.enum(["question", "copy"]).default("question"),
 });
 
 const replySchema = z.object({ name: z.string(), response: z.string() });
