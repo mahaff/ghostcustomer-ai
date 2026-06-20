@@ -154,7 +154,7 @@ export const askPanel = createServerFn({ method: "POST" })
   });
 
 const PulseInput = z.object({
-  question: z.string().min(1).max(500),
+  question: z.string().min(1).max(6000),
   replies: z
     .array(z.object({ name: z.string().max(120), response: z.string().max(4000) }))
     .min(1)
