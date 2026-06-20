@@ -52,6 +52,7 @@ function Panel() {
   } = useGhostStore();
 
   const [question, setQuestion] = useState("");
+  const [mode, setMode] = useState<"question" | "copy">("question");
   const [loading, setLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
