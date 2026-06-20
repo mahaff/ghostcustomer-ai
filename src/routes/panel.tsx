@@ -56,6 +56,7 @@ function Panel() {
   const [loading, setLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const conversationId = useRef(crypto.randomUUID());
 
   useEffect(() => setHydrated(true), []);
 
@@ -76,6 +77,14 @@ function Panel() {
     setQuestion("");
     addUserTurn(q);
     setLoading(true);
+    if (window.pendo?.trackAgent) {
+      window.pendo.trackAgent("prompt", {
+        agentId: "5LEgBurhF_tYq5czbHNiMKL8oOs",
+        conversationId: conversationId.current,
+        messageId: crypto.randomUUID(),
+        content: q,
+      });
+    }
     try {
       const history = useGhostStore.getState().chat.map((turn) =>
         turn.role === "user"
@@ -91,6 +100,14 @@ function Panel() {
         data: { product, customer, personas, history, question: q, mode },
       });
       addPanelTurn(replies);
+      if (window.pendo?.trackAgent) {
+        window.pendo.trackAgent("agent_response", {
+          agentId: "5LEgBurhF_tYq5czbHNiMKL8oOs",
+          conversationId: conversationId.current,
+          messageId: crypto.randomUUID(),
+          content: replies.map((r) => `${r.name}: ${r.response}`).join("\n"),
+        });
+      }
       const turnIndex = useGhostStore.getState().chat.length - 1;
       try {
         const pulse = await callPulse({ data: { question: q, replies } });
