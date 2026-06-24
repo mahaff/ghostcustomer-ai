@@ -91,15 +91,39 @@ function Panel() {
         data: { product, customer, personas, history, question: q, mode },
       });
       addPanelTurn(replies);
+      if (typeof pendo !== "undefined") {
+        pendo.track("focus_group_question_answered", {
+          question_length: q.length,
+          mode,
+          chat_turn_count: useGhostStore.getState().chat.length,
+          response_count: replies.length,
+          persona_count: personas.length,
+        });
+      }
       const turnIndex = useGhostStore.getState().chat.length - 1;
       try {
         const pulse = await callPulse({ data: { question: q, replies } });
         setPulse(turnIndex, pulse);
+        if (typeof pendo !== "undefined") {
+          pendo.track("panel_pulse_synthesized", {
+            question_length: q.length,
+            response_count: replies.length,
+            turn_index: turnIndex,
+          });
+        }
       } catch (pulseErr) {
         console.error(pulseErr);
       }
     } catch (err) {
       console.error(err);
+      if (typeof pendo !== "undefined") {
+        pendo.track("focus_group_question_failed", {
+          question_length: q.length,
+          mode,
+          chat_turn_count: useGhostStore.getState().chat.length,
+          error_message: (err instanceof Error ? err.message : String(err)).substring(0, 200),
+        });
+      }
       toast.error("The panel couldn't respond. Please try again.");
     } finally {
       setLoading(false);
@@ -107,6 +131,15 @@ function Panel() {
   }
 
   function handleReset() {
+    const state = useGhostStore.getState();
+    if (typeof pendo !== "undefined") {
+      pendo.track("focus_group_session_reset", {
+        total_chat_turns: state.chat.length,
+        user_question_count: state.chat.filter((t) => t.role === "user").length,
+        panel_response_count: state.chat.filter((t) => t.role === "panel").length,
+        persona_count: state.personas.length,
+      });
+    }
     reset();
     navigate({ to: "/setup" });
   }
